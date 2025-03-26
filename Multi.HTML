@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ruleta</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        input, button { padding: 10px; margin: 5px; }
+        .container { max-width: 600px; margin: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Registro de Tiros de Ruleta</h2>
+        
+        <label>Tiros hasta el multiplicador:</label>
+        <input type="number" id="tiros" min="1">
+
+        <label>Monto Apostado por Tiro:</label>
+        <input type="number" id="montoApostado" min="1">
+
+        <label>Multiplicador:</label>
+        <select id="multiplicador">
+            <option value="20">x20</option>
+            <option value="40">x40</option>
+            <option value="50">x50</option>
+            <option value="100">x100</option>
+            <option value="200">x200</option>
+            <option value="500">x500</option>
+            <option value="1000">x1000</option>
+        </select>
+
+        <label>Número Ganador:</label>
+        <input type="number" id="numeroGanador" min="0" max="36">
+
+        <button onclick="registrarTiro()">Registrar</button>
+        <button onclick="exportarCSV()">Exportar CSV</button>
+
+        <h3>Resultados</h3>
+        <p id="balance">Balance: $0</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tiros</th>
+                    <th>Monto Apostado</th>
+                    <th>Multiplicador</th>
+                    <th>Número Ganador</th>
+                    <th>Ganancia/Pérdida</th>
+                </tr>
+            </thead>
+            <tbody id="tablaResultados"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let balance = 0;
+
+        function registrarTiro() {
+            let tiros = parseInt(document.getElementById("tiros").value);
+            let montoApostado = parseFloat(document.getElementById("montoApostado").value);
+            let multiplicador = parseInt(document.getElementById("multiplicador").value);
+            let numeroGanador = parseInt(document.getElementById("numeroGanador").value);
+
+            if (isNaN(tiros) || isNaN(montoApostado) || isNaN(numeroGanador)) {
+                alert("Por favor, ingresa valores válidos.");
+                return;
+            }
+
+            let inversion = tiros * montoApostado;  // Inversión total
+            let ganancia = multiplicador * montoApostado; // Ganancia si se gana
+
+            let resultado = ganancia - inversion;
+            balance += resultado;
+
+            // Agregar fila a la tabla
+            let fila = `<tr>
+                <td>${tiros}</td>
+                <td>$${montoApostado}</td>
+                <td>x${multiplicador}</td>
+                <td>${numeroGanador}</td>
+                <td>${resultado >= 0 ? "+$" + resultado : "-$" + Math.abs(resultado)}</td>
+            </tr>`;
+            document.getElementById("tablaResultados").innerHTML += fila;
+            document.getElementById("balance").innerText = `Balance: $${balance}`;
+        }
+
+        function exportarCSV() {
+            let filas = document.querySelectorAll("table tr");
+            let csv = [];
+
+            for (let fila of filas) {
+                let columnas = fila.querySelectorAll("th, td");
+                let filaCSV = [];
+                for (let col of columnas) {
+                    filaCSV.push(col.innerText);
+                }
+                csv.push(filaCSV.join(","));
+            }
+
+            let csvArchivo = new Blob([csv.join("\n")], { type: "text/csv" });
+            let enlace = document.createElement("a");
+            enlace.href = URL.createObjectURL(csvArchivo);
+            enlace.download = "resultados_ruleta.csv";
+            enlace.click();
+        }
+    </script>
+
+</body>
+</html>
